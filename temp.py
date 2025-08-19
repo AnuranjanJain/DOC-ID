@@ -136,5 +136,6 @@ def merge_id_card_with_back(front_path="id_card_output_fhd.png", back_path="back
 
 if __name__ == "__main__":
     # Example usage (replace with your actual participant image and name)
-    create_id_card("participant.png", " Harsimran Singh Gurudatta Singh")
+    create_id_card("participant.png", "Rosie")
     merge_id_card_with_back()
+
