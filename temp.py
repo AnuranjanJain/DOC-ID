@@ -4,7 +4,7 @@ def create_id_card(participant_img_path, participant_name):
     # === Editable variables ===
     PARTICIPANT_IMG_SIZE = (201, 202)  # (width, height) of participant image inside green circle
     NAME_FONT_SIZE = 45                # Font size for participant name
-    CIRCLE_CENTER_X_RATIO = 0.367        # Horizontal position of green circle center (as ratio of width)
+    CIRCLE_CENTER_X_RATIO = 0.2638        # Horizontal position of green circle center (as ratio of width)
     CIRCLE_CENTER_Y_RATIO = 0.557       # Vertical position of green circle center (as ratio of height)
     NAME_BELOW_CIRCLE = 50             # Pixels below circle for name
     # ==========================
@@ -12,7 +12,7 @@ def create_id_card(participant_img_path, participant_name):
     template_path = "image.png"
     template_img = Image.open(template_path)
     # Create a blank FHD canvas
-    fhd_width, fhd_height = 1920, 1080
+    fhd_width, fhd_height = 1080, 1080
     canvas = Image.new("RGB", (fhd_width, fhd_height), (255, 255, 255))
     # Center the template on the canvas, preserving aspect ratio
     template_ratio = template_img.width / template_img.height
