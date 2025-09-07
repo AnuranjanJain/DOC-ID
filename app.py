@@ -1,7 +1,7 @@
+
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash
 import os
 import csv
-import requests
 from werkzeug.utils import secure_filename
 from temp import create_id_card
 
@@ -11,32 +11,32 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-GOOGLE_SHEET_CSV_URL = 'link'
 
-def check_registration(reg_no):
-    response = requests.get(GOOGLE_SHEET_CSV_URL)
-    response.raise_for_status()
-    lines = response.text.splitlines()
-    # Debug: print the first row and column names
-    print('--- Google Sheet CSV Debug ---')
-    reader_debug = csv.DictReader(lines)
-    debug_columns = reader_debug.fieldnames
-    print('Columns:', debug_columns)
-    first_row = next(reader_debug, None)
-    print('First row:', first_row)
-    # Actual check
-    columns = [
-        '''Leader's Registration Number''',
-        'Member 2 Registration Number ',
-        'Team member 3 registration number',
-        'Team member 4 registration number',
-        'Team member 5 registration number'
+
+def check_registration(reg_no, name):
+    reg_columns = [
+        "Team leader registration number",
+        "Team member 2 registration number ",
+        "Team member 3 registration number",
+        "Team member 4 registration number ",
+        "Team member 5 registration number"
     ]
-    reader = csv.DictReader(lines)
-    for row in reader:
-        for col in columns:
-            if str(row.get(col, '')).strip() == str(reg_no).strip():
-                return True
+    name_columns = [
+        "Team Leader Name (Team member 1)",
+        "Team member 2 name",
+        "Team member 3 name",
+        "Team member 4 name",
+        "Team member 5 name"
+    ]
+    with open('DOC(Responces).csv', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            for reg_col, name_col in zip(reg_columns, name_columns):
+                reg_val = str(row.get(reg_col, '')).strip()
+                name_val = str(row.get(name_col, '')).strip()
+                if reg_val.replace(' ', '') == reg_no.replace(' ', ''):
+                    if name_val.lower().replace(' ', '') == name.lower().replace(' ', ''):
+                        return True
     return False
 
 @app.route('/', methods=['GET', 'POST'])
@@ -49,9 +49,9 @@ def index():
             flash('All fields are required!')
             return redirect(url_for('index'))
         # Check registration
-        is_valid = check_registration(reg_no)
+        is_valid = check_registration(reg_no, name)
         if not is_valid:
-            flash('Registration number not found!')
+            flash('Registration number and name do not match!')
             return redirect(url_for('index'))
         # Save photo
         filename = secure_filename(photo.filename)
