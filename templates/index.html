@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Dawn of Code</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Canvas styling for Matrix effect */
+        #canvas, #canvas2 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #000; /* Black background */
+        }
+        
+        /* Matrix-style container with glassmorphism */
+        .container {
+            background: rgba(15, 15, 15, 0.9) !important; /* Darker, more opaque container */
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(116, 204, 0, 0.2) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(116, 204, 0, 0.1) !important;
+        }
+        
+        /* Matrix-style loading screen */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85); /* Darker loading background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.7s;
+        }
+        
+        .loading-text {
+            color: #74cc00;
+            font-family: monospace;
+            font-size: 24px;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px rgba(116, 204, 0, 0.5); /* Reduced glow */
+        }
+        
+        .loading-text span {
+            display: inline-block;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { text-shadow: 0 0 8px rgba(116, 204, 0, 0.5); }
+            100% { text-shadow: 0 0 15px rgba(116, 204, 0, 0.8); } /* Reduced glow */
+        }
+        
+        .spinner {
+            border: 4px solid rgba(15, 15, 15, 0.5);
+            border-top: 4px solid #74cc00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Button glow effect - more subtle */
+        button {
+            text-shadow: 0 0 5px rgba(15, 15, 15, 0.7) !important;
+            box-shadow: 0 0 10px rgba(116, 204, 0, 0.2) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(transparent, transparent, rgba(255,255,255,0.08), transparent, transparent); /* Reduced shine */
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateY(-100%) rotate(45deg); }
+            100% { transform: translateY(100%) rotate(45deg); }
+        }
+        
+        /* Form elements with better contrast against dark background */
+        input[type="text"], input[type="file"] {
+            background: rgba(30, 30, 30, 0.8) !important; /* Darker inputs */
+            color: rgba(255, 255, 255, 0.9) !important; /* Brighter text */
+        }
+        
+        h2 {
+            text-shadow: 0 0 8px rgba(116, 204, 0, 0.3) !important; /* Subtle glow */
+        }
+        
+        /* Participant image styling for circle fit */
+        .participant-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #74cc00;
+            box-shadow: 0 0 15px rgba(116, 204, 0, 0.3);
+        }
+        
+        /* ID Card styling */
+        .id-card {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid rgba(116, 204, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 350px;
+            margin: 20px auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+        }
+        
+        .id-card h3 {
+            color: #74cc00;
+            margin-bottom: 20px;
+        }
+        
+        .id-card p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        .flash {
+            background-color: rgba(116, 204, 0, 0.2);
+            color: #74cc00;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #74cc00;
+        }
+        
+        /* Add responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .participant-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix canvases -->
+    <canvas id="canvas"></canvas>
+    <canvas id="canvas2"></canvas>
+    
+    <!-- Matrix-style loading animation -->
+    <div class="loading" id="loading">
+        <div class="loading-text">
+            <span>L</span><span>O</span><span>A</span><span>D</span><span>I</span><span>N</span><span>G</span>
+        </div>
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="container" id="mainContent" style="display:none;">
+        <h2>Dawn of Code</h2>
+        <h4><center>Grab your ID card now!</center></h4>
+        <!-- Flash messages -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="flash error-box">{{ messages[0] }}</div>
+                    {% endif %}
+                {% endwith %}
+        
+        <!-- Upload form -->
+        <form method="POST" enctype="multipart/form-data">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+            
+            <label for="reg_no">Registration Number</label>
+            <input type="text" id="reg_no" name="reg_no" placeholder="Enter registration number" required>
+            
+            <label for="photo">Photo</label>
+            <input type="file" id="photo" name="photo" accept="image/*" required>
+            <p style="font-size: small;">Note: Participant list updates at 12 AM & 12 PM. Please wait patiently</p>
+
+            <button type="submit">Generate ID Card</button>
+        </form>
+        <p style="margin-top: 30px; "><center>MERN Stack Club</center></p>
+
+        <!-- ID Card output will be displayed here when generated -->
+        {% if id_card %}
+        <div class="id-card">
+            <h3>Generated ID Card</h3>
+            <img src="{{ url_for('static', filename='uploads/' + id_card.photo) }}" alt="Participant Photo" class="participant-image">
+            <p><strong>Name:</strong> {{ id_card.name }}</p>
+            <p><strong>Registration No:</strong> {{ id_card.reg_no }}</p>
+            <p><strong>Date:</strong> {{ id_card.date }}</p>
+            <a href="{{ url_for('download_id_card', filename=id_card.filename) }}" class="btn">Download ID Card</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Main JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
