@@ -59,5 +59,4 @@ This project is licensed under the MIT License.
 
 ---
 
-*Note: Replace `website-preview.png` with an actual image screenshot of the website in your repository.*
 
